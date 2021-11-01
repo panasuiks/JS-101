@@ -24,15 +24,11 @@ E:
 C:
 */
 
-function greetingsScreamCheck(inpName) {
-  if (inpName[(inpName.length-1)] === '!') {
-    inpName = inpName.toUpperCase().slice(0,-1)
-    return `HELLO ${inpName}. WHY ARE WE SCREAMING!?`
-  }
+const multiply = (number1, number2) => number1 * number2;
 
-  return `Hello ${inpName}.`
-}
-
+console.log(multiply(5,3));
+/*
 let rlSync = require('readline-sync');
 let name = rlSync.question('What is your name? ');
 console.log(greetingsScreamCheck(name));
+*/
