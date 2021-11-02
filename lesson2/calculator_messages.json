@@ -1,0 +1,17 @@
+{
+  "en": {
+    "welcome": "Welcome to the calculator!",
+    "invalidNumber": "Hm... that doesn't look like a valid number. Please input a valid number.",
+    "invalidOperation": "Hm... Must choose 1, 2, 3, or 4.\n1) Add 2) Subtract 3) Multiply 4) Divide",
+    "requestFirstNumber": "What's the first number?",
+    "requestSecondNumber": "What's the second number?",
+    "requestRetry": "Would you like to try again? Enter Yes or No",
+    "invalidRetryEntry": "Invalid input. Would you like to do another calculation? Enter Yes or No:",
+    "requestOperation": "What operation would you like to perform?\n1) Add 2) Subtract 3) Multiply 4) Divide",
+    "result": "The result of the operation is ",
+    "thanks": "Thank you for using the calculator! Have a nice life!"
+  },
+  "fr": {
+    "welcome": "bienvenue!"
+  }
+}
