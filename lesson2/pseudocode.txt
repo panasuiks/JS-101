@@ -1,0 +1,38 @@
+/*
+sum of two numbers:
+
+input two numbers
+return number1 plus number 2
+
+SET number1 = input
+SET number2 = input
+
+PRINT number1 + number2
+*/
+
+/*
+input: array of strings output: strings concatenated
+
+SET array = array of strings
+SET iterator = 0
+SET output = ''
+
+WHILE ITERATOR < ARRAY LENGTH
+  output = output + array entry
+  iterator = iterator + 1
+
+PRINT output
+*/
+
+/*input: array of integers output: new array with every other element
+
+SET inpArray = array of integers
+SET outputArray =[]
+SET iterator = 0
+
+WHILE iterator < array length
+  add inpArray[iterator] to outputArray
+  iterator = iterator + 2
+
+PRINT outputArray
+*/
