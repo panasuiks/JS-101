@@ -1,3 +1,4 @@
+//User Interaction Object
 const userInteraction = {
   useReadlineSync() {
     return require('readline-sync');
@@ -67,7 +68,8 @@ const userInteraction = {
   },
 };
 
-const loanCalculator = {
+//Finance Tools Object
+const financeTools = {
   loanCalcAPR(total, interest, duration) {
     let payment;
     let totalPayment;
@@ -108,6 +110,7 @@ const loanCalculator = {
   },
 };
 
+//Main Program
 let continueFlag = true;
 while (continueFlag === true) {
   console.clear();
@@ -124,16 +127,16 @@ while (continueFlag === true) {
   let monthlyInterest = annualInterest / 12;
 
   let [monthlyPayment, totalPayment, totalInterest] =
-    loanCalculator.loanCalcAPR(loanTotal, monthlyInterest, loanDurationMonths);
+    financeTools.loanCalcAPR(loanTotal, monthlyInterest, loanDurationMonths);
 
   let monthlyPaymentString =
-    loanCalculator.numberToDollarsString(monthlyPayment, 2);
+    financeTools.numberToDollarsString(monthlyPayment, 2);
 
   let totalPaymentString =
-    loanCalculator.numberToDollarsString(totalPayment, 2);
+    financeTools.numberToDollarsString(totalPayment, 2);
 
   let totalInterestString =
-    loanCalculator.numberToDollarsString(totalInterest, 2);
+    financeTools.numberToDollarsString(totalInterest, 2);
 
   userInteraction.prompt(
     `Your monthly loan payment is ${monthlyPaymentString}.`);
