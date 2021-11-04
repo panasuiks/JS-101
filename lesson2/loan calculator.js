@@ -1,109 +1,154 @@
-/*
-P:
-Input:
-  loan amount
-  APR
-  loan duration (months or years)
-Output:
-  monthly payment in dollars
-E:
+const userInteraction = {
+  useReadlineSync() {
+    return require('readline-sync');
+  },
 
-  
-
-D:
-input numbers string - don't take advanatage of RLsync.questionInt or Float
-
-A:
-GET loan amount
-GET APR
-GET loan duration in months
-CALCULATE Monthly loan payment
-Round monthly loan payment up by cent
-Log monthly loan payment to user
-
-
-C:
-*/
-
-const rlsync = require('readline-sync');
-
-const userInteractionLibrary = {
   prompt(inpString) {
     console.log('=> ' + inpString);
   },
-  isNonNegativeNumber(input) {
-    if ((Number.isNaN(Number(input))) || (Number(input) < 0)) {
-      return false
+
+  isNonNegativeNumber(inpNum) {
+    inpNum = Number(inpNum);
+    if ((Number.isNaN(inpNum)) ||
+       (inpNum < 0)            ||
+       (Math.abs(inpNum) === Infinity)) {
+      return false;
     } else {
-      return true
+      return true;
     }
   },
-  getNonNegativeNumber(requestString, digits = -1) {
-    this.prompt(requestString);
-    let returnNumber = Number(rlsync.question());
 
+  removeCharactersFromString(inpString) {
+    let returnString = inpString.replace('$', '');
+    returnString = returnString.replace(',', '');
+    return returnString;
+  },
+
+  requestNonNegativeNumber(requestMessage, digits = -1) {
+    let rlsync = this.useReadlineSync();
+    this.prompt(requestMessage);
+    let userInput = rlsync.question();
+    let returnNumber = Number(this.removeCharactersFromString(userInput));
     while (this.isNonNegativeNumber(returnNumber) === false) {
-      this.prompt(`Invalid input.  ${requestString} `);
-      returnNumber = Number(rlsync.question());
+      this.prompt(`Invalid input. ${requestMessage}`);
+      userInput = rlsync.question();
+      returnNumber = Number(this.removeCharactersFromString(userInput));
     }
-    if (digits === -1) {
-      return returnNumber
-    } else if ((Number(digits) !== NaN) && ((Number(digits) >= 0) & (Number(digits) <= 100))) {
+
+    if ((digits !== -1)         &&
+       (Number.isNaN(digits)) &&
+       ((Number(digits) >= 0)   &&
+       (Number(digits) <= 100))) {
       return Number(returnNumber.toFixed(digits));
+    } else {
+      return returnNumber;
     }
   },
-}
 
+  requestString(requestMessage, allowable = false) {
+    let rlsync = this.useReadlineSync();
+    this.prompt(requestMessage);
+    let returnString = rlsync.question().trim();
+    if (allowable === false) {
+      return returnString;
+    } else {
+      allowable = String(allowable).split(',');
+      while (true) {
+        for (let entry of allowable) {
+          entry = entry.trim();
+          if (returnString === entry) {
+            return returnString;
+          }
+        }
+        this.prompt(`Invalid input. ${requestMessage}`);
+        returnString = rlsync.question().trim();
+      }
+    }
+  },
+};
 
-function loanCalc(total, interest, duration) {
-  let payment = total * (interest / (1 - ((1 + interest) ** (-duration))));
-  let totalPayment = roundUpToCents(payment * duration);
-  let totalInterest = totalPayment - total;
-  if (interest === 0) {
-    payment = total / duration;
-    totalPayment = total;
-    totalInterest = 0;
-  } 
+const loanCalculator = {
+  loanCalcAPR(total, interest, duration) {
+    let payment;
+    let totalPayment;
+    let totalInterest;
 
-  return [payment, totalPayment, totalInterest];
-}
+    if (duration === 0) {
+      payment = total;
+      totalPayment = total;
+      totalInterest = 0;
+    } else if ((interest === 0) || (total === 0)) {
+      payment = total / duration;
+      totalPayment = total;
+      totalInterest = 0;
+    } else {
+      payment = total * (interest / (1 - ((1 + interest) ** (-duration))));
+      totalPayment = this.roundUpToCents(payment * duration);
+      totalInterest = totalPayment - total;
+    }
+    return [payment, totalPayment, totalInterest];
+  },
 
-function roundUpToCents(inp) {
-  return Math.ceil(inp * 100) / 100
-}
+  roundUpToCents(inpNum) {
+    return Math.ceil(inpNum * 100) / 100;
+  },
 
-function numberToDollarsString(inpNum, digits) {
-  let numString = inpNum.toFixed(digits);
-  let decimalIndex = numString.indexOf('.');
-  let commaIndex = decimalIndex
-  while (commaIndex >= 4) {
-    numString = numString.slice(0, commaIndex - 3) + ',' + numString.slice(commaIndex - 3);
-    commaIndex -= 3;
+  numberToDollarsString(inpNum, digits) {
+    let numString = inpNum.toFixed(digits);
+    let decimalIndex = numString.indexOf('.');
+    let commaIndex = decimalIndex;
+    while (commaIndex >= 4) {
+      numString = numString.slice(0, commaIndex - 3) + ','
+        + numString.slice(commaIndex - 3);
+
+      commaIndex -= 3;
+    }
+
+    return '$' + numString;
+  },
+};
+
+let continueFlag = true;
+while (continueFlag === true) {
+  console.clear();
+
+  let loanTotal = userInteraction.requestNonNegativeNumber(
+    'Please enter your total loan amount in $USD: ', 2);
+
+  let annualInterest = userInteraction.requestNonNegativeNumber(
+    'Please enter your loan annual percentage rate (APR):') / 100;
+
+  let loanDurationMonths = userInteraction.requestNonNegativeNumber(
+    'Please enter your loan duration in months: ', 0);
+
+  let monthlyInterest = annualInterest / 12;
+
+  let [monthlyPayment, totalPayment, totalInterest] =
+    loanCalculator.loanCalcAPR(loanTotal, monthlyInterest, loanDurationMonths);
+
+  let monthlyPaymentString =
+    loanCalculator.numberToDollarsString(monthlyPayment, 2);
+
+  let totalPaymentString =
+    loanCalculator.numberToDollarsString(totalPayment, 2);
+
+  let totalInterestString =
+    loanCalculator.numberToDollarsString(totalInterest, 2);
+
+  userInteraction.prompt(
+    `Your monthly loan payment is ${monthlyPaymentString}.`);
+
+  userInteraction.prompt(
+    `Your total payment over ${loanDurationMonths} `
+    + `months is ${totalPaymentString}.`);
+
+  userInteraction.prompt(
+    `This includes ${totalInterestString} of interest.\n`);
+
+  let continueString = userInteraction.requestString(
+    `Would you like to calculate another loan? (y/n)`, 'y, n');
+
+  if (continueString === 'n') {
+    continueFlag = false;
   }
-  return '$' + numString
 }
-
-loanTotal = userInteractionLibrary.getNonNegativeNumber('\
-Please enter your total loan amount in $USD: ', 2);
-
-let annualInterest = userInteractionLibrary.getNonNegativeNumber('\
-Please enter your loan annual percentage rate (APR): ') / 100;
-
-let loanDurationMonths = userInteractionLibrary.getNonNegativeNumber('\
-Please enter your loan duration in months: ', 0);
-
-let monthlyInterest = annualInterest / 12;
-
-loanCalc(loanTotal,monthlyInterest,loanDurationMonths);
-
-let [monthlyPayment, totalPayment, totalInterest] = loanCalc(loanTotal, monthlyInterest, loanDurationMonths);
-
-let monthlyPaymentString = numberToDollarsString(monthlyPayment, 2);
-let totalPaymentString = numberToDollarsString(totalPayment, 2);
-let totalInterestString = numberToDollarsString(totalInterest, 2);
-
-userInteractionLibrary.prompt(`Your monthly loan payment is \
-${monthlyPaymentString}.`);
-userInteractionLibrary.prompt(`Your total payment over ${loanDurationMonths} months is ${totalPaymentString}.`);
-userInteractionLibrary.prompt(`This includes ${totalInterestString} of interest.`);
-
