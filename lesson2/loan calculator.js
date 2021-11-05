@@ -35,9 +35,9 @@ const userInteraction = {
       userInput = rlsync.question();
       returnNumber = Number(this.removeCharactersFromString(userInput));
     }
-
+    console.log(digits);
     if ((digits !== -1)         &&
-       (Number.isNaN(digits)) &&
+       !(Number.isNaN(digits))  &&
        ((Number(digits) >= 0)   &&
        (Number(digits) <= 100))) {
       return Number(returnNumber.toFixed(digits));
