@@ -8,111 +8,121 @@ function prompt(message) {
   console.log('=>' + message);
 }
 
-function determineWinner(first, second) {
-  if (((first === 'rock') && ((second === 'scissors') || (second == 'lizard'))) ||
-    ((first === 'paper') && ((second === 'rock') || (second === 'spock'))) ||
-    ((first === 'scissors') && ((second === 'paper') || (second === 'lizard'))) ||
-    ((first === 'spock') && ((second === 'rock') || (second === 'scissors'))) ||
-    ((first === 'lizard') && ((second === 'spock') || (second === 'paper')))) {
-    return 1
-  } else if (((first === 'rock') && ((second === 'paper') || (second == 'spock'))) ||
-    ((first === 'paper') && ((second === 'scissors') || (second === 'lizard'))) ||
-    ((first === 'scissors') && ((second === 'rock') || (second === 'spock'))) ||
-    ((first === 'spock') && ((second === 'paper') || (second === 'lizard'))) ||
-    ((first === 'lizard') && ((second === 'rock') || (second === 'scissors')))) {
-    return 2
+function determineWinner(arg1, arg2) {
+  if (arg1 === arg2) {
+    return 0;
+  } else if (
+    ((arg1 === 'rock') && ((arg2 === 'scissors') || (arg2 === 'lizard'))) ||
+    ((arg1 === 'paper') && ((arg2 === 'rock') || (arg2 === 'spock'))) ||
+    ((arg1 === 'scissors') && ((arg2 === 'paper') || (arg2 === 'lizard'))) ||
+    ((arg1 === 'spock') && ((arg2 === 'rock') || (arg2 === 'scissors'))) ||
+    ((arg1 === 'lizard') && ((arg2 === 'spock') || (arg2 === 'paper')))) {
+    return 1;
   } else {
-    return 0
+    return 2;
   }
 }
 
 function convertToValidInput(inpString) {
-  let indexIterator = 0
-  let matchedEntries = []
-  let matchCounter = 0
-  let currentSearchArray = copyArrayValues(VALID_CHOICES);
+  let searchArray = copyArrayValues(VALID_CHOICES);
   let match = '';
-  while (indexIterator < inpString.length) {
-    matchCounter = 0
-    matchedEntries = []
-    for (index in currentSearchArray) {
-      if (currentSearchArray[index][indexIterator] === inpString[indexIterator]) {
-        matchCounter += 1;
-        matchedEntries.push(currentSearchArray[index]);
+  for (let stringIndex = 0; stringIndex < inpString.length; stringIndex += 1) {
+    let matchedEntries = [];
+    for (let arrayIndex in searchArray) {
+      if (searchArray[arrayIndex][stringIndex] === inpString[stringIndex]) {
+        matchedEntries.push(searchArray[arrayIndex]);
       }
     }
-    if (matchCounter === 0) { break }
-    if (matchCounter === 1) { match = matchedEntries[0]; break }
-    currentSearchArray = copyArrayValues(matchedEntries);
-    indexIterator += 1;
+    if (matchedEntries.length === 0) break;
+    if (matchedEntries.length === 1) {
+      match = matchedEntries[0];
+      break;
+    }
+    searchArray = copyArrayValues(matchedEntries);
   }
-  return (startMatchString(inpString, match)) ? match : undefined
+  return (doesStartMatchString(inpString, match)) ? match : undefined;
 }
 
-function startMatchString(start, string) {
+function doesStartMatchString(start, string) {
   let match = true;
-  for (index in start) {
-    if (start[index] !== string[index]) {match = false; break }
+  for (let index in start) {
+    if (start[index] !== string[index]) {
+      match = false;
+      break;
+    }
   }
-  return match
+  return match;
 }
 
 function copyArrayValues(inpArray) {
   let returnArray = [];
-  for (entry of inpArray) {
+  for (let entry of inpArray) {
     returnArray.push(entry);
   }
   return returnArray;
 }
 
-function maxStringLengthInArray(inpArray) {
-  let maxLength = 0
-  for (string of inpArray) {
-    if (string.length > maxLength) { maxLength = string.length }
-  }
-  return maxLength
+function getRandomChoice() {
+  let randomIndex = Math.floor(Math.random() * VALID_CHOICES.length);
+  return VALID_CHOICES[randomIndex];
 }
 
+//Main Logic
+console.clear();
+let userScore = 0;
+let compScore = 0;
 
-
-
-console.clear()
-let userScore = 0
-let compScore = 0
 while (true) {
   prompt(`Choose one: ${VALID_CHOICES.join(', ')}`);
   let userChoice = convertToValidInput(rlsync.question());
   while (!VALID_CHOICES.includes(userChoice)) {
-    prompt(`That\'s not a valid choice. Please choose one: ${VALID_CHOICES.join(', ')}`);
+    prompt(`That's not a valid choice. Please choose one: ${VALID_CHOICES.join(', ')}`);
     userChoice = convertToValidInput(rlsync.question());
   }
 
-  let randomIndex = Math.floor(Math.random() * VALID_CHOICES.length);
-  let computerChoice = VALID_CHOICES[randomIndex];
+  let computerChoice = getRandomChoice();
 
   prompt(`You chose ${userChoice} and the computer chose ${computerChoice}.`);
 
-  let winner = determineWinner(userChoice, computerChoice);
-  if (winner === 1) {
-    prompt('You win! Congratulations!');
+  let roundWinner = determineWinner(userChoice, computerChoice);
+
+
+  if (roundWinner === 1) {
     userScore += 1;
-  } else if (winner === 2) {
-    prompt('Computer wins!');
+    prompt('You win this round! Congratulations!\n');
+    prompt(`The score is user: ${userScore} | computer: ${compScore}\n`);
+  } else if (roundWinner === 2) {
     compScore += 1;
+    prompt('Computer wins this round!\n');
+    prompt(`The score is user: ${userScore} | computer: ${compScore}\n`);
   } else {
-    prompt('It\'s a tie');
+    prompt('It\'s a tie\n');
+    prompt(`The score is user: ${userScore} | computer: ${compScore}\n`);
   }
 
-  prompt('Do you want to play again? (y/n)');
-  let answer = rlsync.question().toLowerCase();
-  while ((answer[0] !== 'n') && (answer[0] !== 'y')) {
-    prompt('Please enter "y" or "n".');
-    answer = rlsync.question().toLowerCase();
+  let didSomeoneWin = false;
+
+  if (userScore >= WINS_FOR_WIN) {
+    prompt(`You won the series!`);
+    prompt('CONGRATULATIONS!\n');
+    didSomeoneWin = true;
+  } else if (compScore >= WINS_FOR_WIN) {
+    prompt(`You lost the series. Beter luck next time.\n`);
+    didSomeoneWin = true;
   }
 
-  if (answer[0] === 'n') break;
-  console.clear()
-
-  prompt(`The current score is user: ${userScore} | computer: ${compScore}\n`);
-
+  if (didSomeoneWin) {
+    prompt('Do you want to play again? (y/n)');
+    let answer = rlsync.question().toLowerCase();
+    while ((answer[0] !== 'n') && (answer[0] !== 'y')) {
+      prompt('Please enter "y" or "n".');
+      answer = rlsync.question().toLowerCase();
+    }
+    if (answer[0] === 'n') break;
+    console.clear();
+  } else {
+    prompt('Press enter to advance to next round');
+    rlsync.question();
+    console.clear();
+  }
 }
