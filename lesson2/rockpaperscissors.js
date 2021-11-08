@@ -8,6 +8,16 @@ function prompt(message) {
   console.log('=>' + message);
 }
 
+function getUserChoice() {
+  prompt(`Choose one: ${VALID_CHOICES.join(', ')}`);
+  let userChoice = convertToValidInput(rlsync.question());
+  while (!VALID_CHOICES.includes(userChoice)) {
+    prompt(`That's not a valid choice. Please choose one: ${VALID_CHOICES.join(', ')}`);
+    userChoice = convertToValidInput(rlsync.question());
+  }
+  return userChoice;
+}
+
 function determineWinner(arg1, arg2) {
   if (arg1 === arg2) {
     return 0;
@@ -73,19 +83,12 @@ let userScore = 0;
 let compScore = 0;
 
 while (true) {
-  prompt(`Choose one: ${VALID_CHOICES.join(', ')}`);
-  let userChoice = convertToValidInput(rlsync.question());
-  while (!VALID_CHOICES.includes(userChoice)) {
-    prompt(`That's not a valid choice. Please choose one: ${VALID_CHOICES.join(', ')}`);
-    userChoice = convertToValidInput(rlsync.question());
-  }
-
+  let userChoice = getUserChoice();
   let computerChoice = getRandomChoice();
 
   prompt(`You chose ${userChoice} and the computer chose ${computerChoice}.`);
 
   let roundWinner = determineWinner(userChoice, computerChoice);
-
 
   if (roundWinner === 1) {
     userScore += 1;
@@ -100,18 +103,18 @@ while (true) {
     prompt(`The score is user: ${userScore} | computer: ${compScore}\n`);
   }
 
-  let didSomeoneWin = false;
+  let didSomeoneWinSeries = false;
 
   if (userScore >= WINS_FOR_WIN) {
     prompt(`You won the series!`);
     prompt('CONGRATULATIONS!\n');
-    didSomeoneWin = true;
+    didSomeoneWinSeries = true;
   } else if (compScore >= WINS_FOR_WIN) {
     prompt(`You lost the series. Beter luck next time.\n`);
-    didSomeoneWin = true;
+    didSomeoneWinSeries = true;
   }
 
-  if (didSomeoneWin) {
+  if (didSomeoneWinSeries) {
     prompt('Do you want to play again? (y/n)');
     let answer = rlsync.question().toLowerCase();
     while ((answer[0] !== 'n') && (answer[0] !== 'y')) {
@@ -119,7 +122,11 @@ while (true) {
       answer = rlsync.question().toLowerCase();
     }
     if (answer[0] === 'n') break;
-    console.clear();
+    if (answer[0] === 'y') {
+      userScore = 0;
+      compScore = 0;
+      console.clear();
+    }
   } else {
     prompt('Press enter to advance to next round');
     rlsync.question();
