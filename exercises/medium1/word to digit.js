@@ -42,7 +42,8 @@ let wordObject = {
 
 const wordToDigit = inpString => {
   for (key in wordObject) {
-    inpString.replace(key, String(wordObject[key]));
+    let regex = new RegExp('\\b' + key + '\\b', 'g');
+    inpString = inpString.replaceAll(regex, wordObject[key]);
   }
   return inpString;
 }
