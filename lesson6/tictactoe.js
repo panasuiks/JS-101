@@ -11,12 +11,31 @@ const winningLines = [
   [1, 5, 9], [3, 5, 7]
 ]
 
+function displayLegend() {
+  console.clear();
+  console.log('Welcome to TicTacToe! Good luck!')
+  console.log('');
+  console.log('');
+  console.log('');
+  console.log(`     |     |`);
+  console.log(` nw  |  n  |  ne`);
+  console.log(`     |     |`);
+  console.log('-----+-----+-----')
+  console.log(`     |     |`);
+  console.log(`  w  |  c  |  e`);
+  console.log(`     |     |`);
+  console.log('-----+-----+-----')
+  console.log(`     |     |`);
+  console.log(` sw  |  s  |  se`);
+  console.log(`     |     |`);
+  console.log('');
+}
+
 function displayGrid(board, score) {
   console.clear();
   console.log(`The score is human: ${score.Human} | computer: ${score.Computer}`);
   console.log('');
   console.log(`You are ${PLAYER_OBJECT.Human}.  Computer is ${PLAYER_OBJECT.Computer}.`);
-  console.log('');
   console.log('');
   console.log(`     |     |`);
   console.log(`  ${board[1]}  |  ${board[2]}  |  ${board[3]}`);
@@ -33,80 +52,56 @@ function displayGrid(board, score) {
 }
 
 function resetBoard() {
-  return {
-    1: INITIAL_MARK,
-    2: INITIAL_MARK,
-    3: INITIAL_MARK,
-    4: INITIAL_MARK,
-    5: INITIAL_MARK,
-    6: INITIAL_MARK,
-    7: INITIAL_MARK,
-    8: INITIAL_MARK,
-    9: INITIAL_MARK,
+  let returnObj = {};
+  for (i = 1; i <= 9; i += 1) {
+    returnObj[i] = INITIAL_MARK
   }
+  return returnObj;
 }
 
-function checkLosingSquare(board) {
-  let humanMark = PLAYER_OBJECT.Human;
-  let computerMark = PLAYER_OBJECT.Computer;
-  for (let winners of winningLines) {
-    if (winners.some(position => board[position] === humanMark)) {
-      let total = winners.reduce((prev, curr) => prev + curr, 0);
-      let sum = 0;
-      let found = 0;
-      for (position of winners) {
-        if (board[position] === computerMark) break;
-        if (board[position] === humanMark) {
-          found += 1;
-          sum += position;
+function checkWinningSquare(board, player) {
+  let mark = PLAYER_OBJECT[player];
+  let otherMark = PLAYER_OBJECT[alternatePlayer(player)];
+  for (let winner of winningLines) {
+    if (winner.some(position => board[position] === mark)) {
+      currentWinner = winner.slice();
+      let otherFound = false;
+      for (i = 0; i < winner.length; i += 1) {
+        if (board[winner[i]] === otherMark) otherFound = true;
+        if (board[winner[i]] === mark) {
+          currentWinner.splice(currentWinner.indexOf(winner[i]), 1);
         }
       }
-      if (found === 2) {
-        return total - sum;
+      if (currentWinner.length === 1 && otherFound === false) {
+        return currentWinner[0];
       }
     }
   }
   return undefined;
 }
 
-function checkWinningSquare(board) {
-  let humanMark = PLAYER_OBJECT.Human;
-  let computerMark = PLAYER_OBJECT.Computer;
-  for (let winners of winningLines) {
-    if (winners.some(position => board[position] === computerMark)) {
-      let total = winners.reduce((prev, curr) => prev + curr, 0);
-      let sum = 0;
-      let found = 0;
-      for (position of winners) {
-        if (board[position] === humanMark) break;
-        if (board[position] === computerMark) {
-          found += 1;
-          sum += position;
-        }
-        debugger
-        if (found === 2) {
-          return total - sum;
-        }
-      }
-    }
-  }
-  return undefined;
+function chooseRandomEmptySelection(board) {
+  let emptySelections = findEmptySquares(board);
+  return emptySelections[Math.floor(Math.random() * emptySelections.length)];
 }
-
 
 function computerChooseSquare(board) {
-  let selections = findEmptySquares(board);
-  let randomPosition = selections[Math.floor(Math.random() * selections.length)]
-  let position = checkWinningSquare(board) || checkLosingSquare(board) || randomPosition;
+  let compName = Object.keys(PLAYER_OBJECT)[1];
+  let humanName = Object.keys(PLAYER_OBJECT)[0];
+
+  let position = checkWinningSquare(board, compName) ||
+    checkWinningSquare(board, humanName) ||
+    chooseRandomEmptySelection(board);
+
   board[position] = PLAYER_OBJECT.Computer
 }
 
+function playerChooseSquare(board, player) {
+  if (player === Object.keys(PLAYER_OBJECT)[0]) humanChooseSquare(board);
+  if (player === Object.keys(PLAYER_OBJECT)[1]) computerChooseSquare(board);
+}
 
-function playerChooseSquare(board) {
-  let selections = findEmptySquares(board);
-  selections = selections.map(position => CARDINAL_CONVERSION[position])
-  selections = joinOr(selections);
-  prompt(`Please enter your selection (${selections})`);
+function getValidUserInput(board) {
   let playerSelection = rlsync.question().trim().toLowerCase();
   let playerSelectionNum = CARDINAL_CONVERSION.indexOf(playerSelection);
   while (true) {
@@ -127,99 +122,21 @@ function playerChooseSquare(board) {
   }
 }
 
+function humanChooseSquare(board) {
+  let selections = joinOr(
+    findEmptySquares(board).
+      map(position => CARDINAL_CONVERSION[position]));
+  prompt(`Please enter your selection (${selections})`);
+  let userSelection = getValidUserInput(board);
+  board[userSelection] = PLAYER_OBJECT.Human;
+}
+
 function findEmptySquares(board) {
   return Object.keys(board).filter(key => board[key] === INITIAL_MARK);
 }
 
 function prompt(string) {
   console.log(`=> ${string}`)
-}
-
-function displayLegend() {
-  console.log('');
-  console.log(`     |     |`);
-  console.log(` nw  |  n  |  ne`);
-  console.log(`     |     |`);
-  console.log('-----+-----+-----')
-  console.log(`     |     |`);
-  console.log(`  w  |  c  |  e`);
-  console.log(`     |     |`);
-  console.log('-----+-----+-----')
-  console.log(`     |     |`);
-  console.log(` sw  |  s  |  se`);
-  console.log(`     |     |`);
-  console.log('');
-}
-
-function isBoardFull(board) {
-  return (findEmptySquares(board).length === 0);
-}
-
-function convertMarkToPlayer(mark) {
-  let entries = Object.entries(PLAYER_OBJECT);
-  for (player of entries) {
-    if (player[1] === mark) return player[0]
-  }
-}
-
-function detectWinnerStraight(board) {
-  let checkArray = [1, 2, 3, 4, 7];
-  for (let searchPosition of checkArray) {
-    if (board[searchPosition] !== INITIAL_MARK) {
-      let mark = board[searchPosition];;
-      if (searchPosition % 3 === 1) {
-        if (board[searchPosition + 1] === mark &&
-          board[searchPosition + 2] === mark) {
-          return convertMarkToPlayer(mark);
-        }
-      }
-      if (searchPosition <= 3) {
-        if (board[searchPosition + 3] === mark &&
-          board[searchPosition + 6] === mark) {
-          return convertMarkToPlayer(mark);
-        }
-      }
-    }
-  }
-  return undefined;
-}
-
-function detectWinnerDiagonal(board) {
-  let checkArray = [1, 3];
-  for (let searchPosition of checkArray) {
-    if (board[searchPosition] !== INITIAL_MARK) {
-      let mark = board[searchPosition];
-      let centerIndex = 5;
-      if (board[centerIndex] === mark && board[centerIndex + (centerIndex - searchPosition)] === mark) {
-        return convertMarkToPlayer(mark);
-      }
-    }
-  }
-  return undefined;
-}
-
-function detectWinner(board) {
-  let humanMark = PLAYER_OBJECT.Human;
-  let compMark = PLAYER_OBJECT.Computer;
-
-  for (let winners of winningLines) {
-    if (winners.every(position => board[position] === humanMark)) return 'Human'
-    if (winners.every(position => board[position] === compMark)) return 'Computer'
-  }
-  return undefined
-  //return detectWinnerStraight(board) || detectWinnerDiagonal(board);
-}
-
-function didSomeoneWin(board) {
-  return !!detectWinner(board);
-}
-
-function createScoreObject(playerObject) {
-  let returnObj = {}
-  for (let player in playerObject) {
-    returnObj[player] = 0;
-  }
-  return returnObj;
 }
 
 function joinOr(array, punctuation = ', ', finish = 'or') {
@@ -230,23 +147,73 @@ function joinOr(array, punctuation = ', ', finish = 'or') {
   let endString = punctuation + finish + ' ' + end.join('')
   return beginningString + endString;
 }
+
+function isBoardFull(board) {
+  return (findEmptySquares(board).length === 0);
+}
+
+function detectWinner(board) {
+  let humanMark = PLAYER_OBJECT.Human;
+  let compMark = PLAYER_OBJECT.Computer;
+
+  for (let winners of winningLines) {
+    if (winners.every(position => board[position] === humanMark)) {
+      return 'Human'
+    }
+    if (winners.every(position => board[position] === compMark)) {
+      return 'Computer'
+    }
+  }
+  return undefined
+}
+
+function didSomeoneWinRound(board) {
+  return !!detectWinner(board);
+}
+
+function createScoreObject() {
+  let returnObj = {}
+  for (let player in PLAYER_OBJECT) {
+    returnObj[player] = 0;
+  }
+  return returnObj;
+}
+
+function alternatePlayer(current) {
+  let players = Object.keys(PLAYER_OBJECT);
+  let oppositePlayers = players.slice().reverse();
+  for (let key in players) {
+    if (current === players[key]) {
+      return oppositePlayers[key];
+    }
+  }
+}
+
 while (true) {
-  let playAgain = true;
-  let score = createScoreObject(PLAYER_OBJECT);
+  let score = createScoreObject();
+  displayLegend()
+  let firstRound = true;
   while (true) {
     let board = resetBoard();
-    while (true) {
+    let currentPlayer = Object.keys(PLAYER_OBJECT)[0];
+    if (firstRound === true) {
+      displayLegend()
+      firstRound = false;
+    } else {
       displayGrid(board, score);
-      playerChooseSquare(board);
-      if (isBoardFull(board) || didSomeoneWin(board)) break;
-      computerChooseSquare(board);
-      if (isBoardFull(board) || didSomeoneWin(board)) break;
     }
-    displayGrid(board, score);
-    if (didSomeoneWin(board)) {
+    while (true) {
+      playerChooseSquare(board, currentPlayer);
+      if (isBoardFull(board) || didSomeoneWinRound(board)) break;
+      currentPlayer = alternatePlayer(currentPlayer);
+      displayGrid(board, score);
+    }
+    displayGrid(board,score);
+    if (didSomeoneWinRound(board)) {
       let winner = detectWinner(board)
       score[winner] += 1;
       if (score[winner] >= SCORE_TO_WIN) {
+        displayGrid(board, score);
         prompt(`${winner} has won the series!`)
         break;
       }
@@ -259,6 +226,7 @@ while (true) {
     prompt('Press enter to start the next round!')
     rlsync.question();
   }
+
   prompt('Would you like to play again? (y/n)')
   let userPlayAgain = rlsync.question().toLowerCase();
   while (!VALID_PLAY_AGAIN.includes(userPlayAgain)) {
