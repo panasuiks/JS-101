@@ -32,9 +32,9 @@ function leadingSubstrings(inpString) {
   return result;
 }
 
-function leadingSubstrings(inpString) {
+function leadingSubstrings(inpString, ) {
   let inpArray = inpString.split('');
-  let result = inpArray.reduce((prev, current) => {
+  return inpArray.reduce((prev, current) => {
     if (prev.length === 0) {
       return [current];
     } else {
