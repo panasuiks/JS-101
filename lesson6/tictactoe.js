@@ -9,22 +9,22 @@ const winningLines = [
   [1, 2, 3], [4, 5, 6], [7, 8, 9],
   [1, 4, 7], [2, 5, 8], [3, 6, 9],
   [1, 5, 9], [3, 5, 7]
-]
+];
 
 function displayLegend() {
   console.clear();
-  console.log('Welcome to TicTacToe! Good luck!')
+  console.log('Welcome to TicTacToe! Good luck!');
   console.log('');
   console.log('');
   console.log('');
   console.log(`     |     |`);
   console.log(` nw  |  n  |  ne`);
   console.log(`     |     |`);
-  console.log('-----+-----+-----')
+  console.log('-----+-----+-----');
   console.log(`     |     |`);
   console.log(`  w  |  c  |  e`);
   console.log(`     |     |`);
-  console.log('-----+-----+-----')
+  console.log('-----+-----+-----');
   console.log(`     |     |`);
   console.log(` sw  |  s  |  se`);
   console.log(`     |     |`);
@@ -40,11 +40,11 @@ function displayGrid(board, score) {
   console.log(`     |     |`);
   console.log(`  ${board[1]}  |  ${board[2]}  |  ${board[3]}`);
   console.log(`     |     |`);
-  console.log('-----+-----+-----')
+  console.log('-----+-----+-----');
   console.log(`     |     |`);
   console.log(`  ${board[4]}  |  ${board[5]}  |  ${board[6]}`);
   console.log(`     |     |`);
-  console.log('-----+-----+-----')
+  console.log('-----+-----+-----');
   console.log(`     |     |`);
   console.log(`  ${board[7]}  |  ${board[8]}  |  ${board[9]}`);
   console.log(`     |     |`);
@@ -53,47 +53,16 @@ function displayGrid(board, score) {
 
 function resetBoard() {
   let returnObj = {};
-  for (i = 1; i <= 9; i += 1) {
-    returnObj[i] = INITIAL_MARK
+  for (let i = 1; i <= 9; i += 1) {
+    returnObj[i] = INITIAL_MARK;
   }
   return returnObj;
 }
 
-function checkWinningSquare(board, player) {
-  let mark = PLAYER_OBJECT[player];
-  let otherMark = PLAYER_OBJECT[alternatePlayer(player)];
-  for (let winner of winningLines) {
-    if (winner.some(position => board[position] === mark)) {
-      currentWinner = winner.slice();
-      let otherFound = false;
-      for (i = 0; i < winner.length; i += 1) {
-        if (board[winner[i]] === otherMark) otherFound = true;
-        if (board[winner[i]] === mark) {
-          currentWinner.splice(currentWinner.indexOf(winner[i]), 1);
-        }
-      }
-      if (currentWinner.length === 1 && otherFound === false) {
-        return currentWinner[0];
-      }
-    }
-  }
-  return undefined;
-}
-
-function chooseRandomEmptySelection(board) {
-  let emptySelections = findEmptySquares(board);
-  return emptySelections[Math.floor(Math.random() * emptySelections.length)];
-}
-
 function computerChooseSquare(board) {
   let compName = Object.keys(PLAYER_OBJECT)[1];
-  let humanName = Object.keys(PLAYER_OBJECT)[0];
-
-  let position = checkWinningSquare(board, compName) ||
-    checkWinningSquare(board, humanName) ||
-    chooseRandomEmptySelection(board);
-
-  board[position] = PLAYER_OBJECT.Computer
+  let square = miniMax(board, compName).index;
+  board[square] = PLAYER_OBJECT.Computer;
 }
 
 function playerChooseSquare(board, player) {
@@ -109,16 +78,16 @@ function getValidUserInput(board) {
       prompt('Invalid selection. Please enter your selection.');
       playerSelection = rlsync.question();
       playerSelectionNum = CARDINAL_CONVERSION.indexOf(playerSelection);
-      continue
+      continue;
     }
     if (board[playerSelectionNum] !== INITIAL_MARK) {
       prompt('Selection already chosen. Please enter different selection.');
       playerSelection = rlsync.question();
       playerSelectionNum = CARDINAL_CONVERSION.indexOf(playerSelection);
-      continue
+      continue;
     }
-    board[playerSelectionNum] = PLAYER_OBJECT.Human
-    break
+    board[playerSelectionNum] = PLAYER_OBJECT.Human;
+    break;
   }
 }
 
@@ -136,7 +105,7 @@ function findEmptySquares(board) {
 }
 
 function prompt(string) {
-  console.log(`=> ${string}`)
+  console.log(`=> ${string}`);
 }
 
 function joinOr(array, punctuation = ', ', finish = 'or') {
@@ -144,7 +113,7 @@ function joinOr(array, punctuation = ', ', finish = 'or') {
   let beginning = array.slice(0, -1);
   let end = array.slice(-1);
   let beginningString = beginning.join(punctuation);
-  let endString = punctuation + finish + ' ' + end.join('')
+  let endString = punctuation + finish + ' ' + end.join('');
   return beginningString + endString;
 }
 
@@ -153,18 +122,14 @@ function isBoardFull(board) {
 }
 
 function detectWinner(board) {
-  let humanMark = PLAYER_OBJECT.Human;
-  let compMark = PLAYER_OBJECT.Computer;
-
   for (let winners of winningLines) {
-    if (winners.every(position => board[position] === humanMark)) {
-      return 'Human'
-    }
-    if (winners.every(position => board[position] === compMark)) {
-      return 'Computer'
+    for (let player in PLAYER_OBJECT) {
+      if (winners.every(spot => board[spot] === PLAYER_OBJECT[player])) {
+        return player;
+      }
     }
   }
-  return undefined
+  return undefined;
 }
 
 function didSomeoneWinRound(board) {
@@ -172,7 +137,7 @@ function didSomeoneWinRound(board) {
 }
 
 function createScoreObject() {
-  let returnObj = {}
+  let returnObj = {};
   for (let player in PLAYER_OBJECT) {
     returnObj[player] = 0;
   }
@@ -187,59 +152,94 @@ function alternatePlayer(current) {
       return oppositePlayers[key];
     }
   }
+  return undefined;
+}
+
+function determineBestResult(results, currentPlayer, startingPlayer) {
+  let compareFunction;
+  if (currentPlayer === startingPlayer) {
+    compareFunction = (a, b) => b.score - a.score;
+  } else {
+    compareFunction = (a, b) => a.score - b.score;
+  }
+  results.sort(compareFunction);
+  let best = results[0].score;
+  results = results.filter(object => object.score === best);
+  return results[Math.floor((Math.random() * results.length))];
+}
+
+function miniMax(board, currentPlayer, startingPlayer = currentPlayer) {
+  let validLocations = findEmptySquares(board);
+  if (detectWinner(board) === startingPlayer) return { score: 1 };
+  if (detectWinner(board) === alternatePlayer(startingPlayer)) {
+    return { score: -1 };
+  }
+  if (isBoardFull(board) === true) return { score: 0 };
+  let allResultArray = [];
+  for (let location of validLocations) {
+    let currentResult = {};
+    currentResult.index = location;
+    let newBoard = Object.assign({}, board);
+    newBoard[location] = PLAYER_OBJECT[currentPlayer];
+    currentResult.score = miniMax(
+      newBoard, alternatePlayer(currentPlayer), startingPlayer)
+      .score;
+    allResultArray.push(currentResult);
+  }
+  return determineBestResult(allResultArray, currentPlayer, startingPlayer);
 }
 
 while (true) {
   let score = createScoreObject();
-  displayLegend()
+  displayLegend();
   let firstRound = true;
+
   while (true) {
     let board = resetBoard();
     let currentPlayer = Object.keys(PLAYER_OBJECT)[0];
     if (firstRound === true) {
-      displayLegend()
+      displayLegend();
       firstRound = false;
     } else {
       displayGrid(board, score);
     }
+
     while (true) {
       playerChooseSquare(board, currentPlayer);
       if (isBoardFull(board) || didSomeoneWinRound(board)) break;
       currentPlayer = alternatePlayer(currentPlayer);
       displayGrid(board, score);
     }
-    displayGrid(board,score);
+
+    displayGrid(board, score);
     if (didSomeoneWinRound(board)) {
-      let winner = detectWinner(board)
+      let winner = detectWinner(board);
       score[winner] += 1;
       if (score[winner] >= SCORE_TO_WIN) {
         displayGrid(board, score);
-        prompt(`${winner} has won the series!`)
+        prompt(`${winner} has won the series!`);
         break;
       }
-      prompt(`${winner} has won the round!`)
+      prompt(`${winner} has won the round!`);
     } else if (isBoardFull(board)) {
-      prompt(`This round was a tie!`)
+      prompt(`This round was a tie!`);
     }
 
     prompt('');
-    prompt('Press enter to start the next round!')
+    prompt('Press enter to start the next round!');
     rlsync.question();
   }
 
-  prompt('Would you like to play again? (y/n)')
+  prompt('Would you like to play again? (y/n)');
   let userPlayAgain = rlsync.question().toLowerCase();
   while (!VALID_PLAY_AGAIN.includes(userPlayAgain)) {
     prompt('Invalid input. Would you like to play again? (y,n)?');
     userPlayAgain = rlsync.question().toLowerCase();
   }
   if (userPlayAgain[0] === 'n') {
-    prompt('Thank you for playing! Have a great day!')
+    prompt('Thank you for playing! Have a great day!');
     break;
   }
 }
-
-
-
 
 
