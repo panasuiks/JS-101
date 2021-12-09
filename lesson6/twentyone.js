@@ -1,5 +1,5 @@
 let rlsync = require('readline-sync');
-const PLAYERS = ['Human', 'Human2'];
+const PLAYERS = ['Steve', 'Christen'];
 const DEALER = 'Dealer';
 const MIN_CARDS = 100;
 const STARTING_MONEY = 100;
@@ -9,12 +9,6 @@ function prompt(message) {
 
 function makeTable(players, dealer, minCards, startingMoney) {
   let table = {
-    hands: {},
-    deck: [],
-    bets: {},
-    wallets: {},
-    winners: {},
-    score: {},
     players: PLAYERS,
     DEALER: dealer,
     minCards: minCards,
@@ -23,13 +17,20 @@ function makeTable(players, dealer, minCards, startingMoney) {
 
     NUMBER_OF_DECKS: 4,
 
-    resetHands() {
+    resetTable() {
       let players = this.players.slice()
       players[players.length] = this.DEALER;
+      this.hands = {};
+      this.bets = {};
+      this.winners = {};
       for (let player of players) {
         this.hands[player] = [];
+        if (player !== this.DEALER) {
+          this.winners[player] = undefined;
+          this.bets[player] = 0;
+        }
       }
-      this.calculateScore();
+      console.clear();
     },
 
     resetDeck() {
@@ -47,29 +48,16 @@ function makeTable(players, dealer, minCards, startingMoney) {
       }
     },
 
-    resetWinners() {
-      for (let player of this.players) {
-        if (player === this.DEALER) continue;
-        this.winners[player] = undefined;
-      }
-    },
-
     resetWallet() {
+      this.wallets = {};
       for (let player of this.players) {
         if (player === this.DEALER) continue;
         this.wallets[player] = this.startingMoney;
       }
     },
 
-    resetBets() {
-      this.bets = {};
-      for (let player in this.wallets) {
-        this.bets[player] = 0;
-      }
-    },
 
     dealCards() {
-      this.resetHands();
       const CARDS_PER_USER = 2;
       for (let player in this['hands']) {
         for (let card = 1; card <= CARDS_PER_USER; card += 1) {
@@ -255,7 +243,7 @@ function makeTable(players, dealer, minCards, startingMoney) {
         while (true) {
           this.displayPlayerCards(player, true);
           if (this.didPlayerBust(player)) {
-            prompt('You lost');
+            prompt(`${player} lost.`);
             table.winners[player] = false;
             break
           }
@@ -316,13 +304,6 @@ function makeTable(players, dealer, minCards, startingMoney) {
       console.clear();
     },
 
-    resetTable() {
-      table.resetHands();
-      table.resetWinners();
-      table.resetBets();
-      console.clear();
-    },
-
     getStayOrHit(player) {
       const USER_CHOICES = ['stay', 'hit'];
       prompt(`Would ${player} like to stay or hit?`);
@@ -350,9 +331,22 @@ function makeTable(players, dealer, minCards, startingMoney) {
       lineArray.push([]);
       for (let player in this.winners) {
         let wallet = this.wallets[player];
-          lineArray[lineArray.length - 1].push(`${player} wallet = $${wallet.toFixed(2)}`)
+        lineArray[lineArray.length - 1].push(`${player} wallet = $${wallet.toFixed(2)}`)
       }
       this.displayArray(lineArray);
+    },
+
+    getUserNewHand() {
+      this.displayEmptyLines(1);
+      const USER_CHOICES = ['yes', 'no'];
+      let response;
+      while (true) {
+        prompt(`Would you like to play another hand? (yes/no)`);
+        response = rlsync.question().toLowerCase();
+        if (USER_CHOICES.includes(response)) break;
+        prompt(`Selection invalid.`);
+      }
+      return (response === 'yes');
     },
 
     startGame() {
@@ -366,7 +360,10 @@ function makeTable(players, dealer, minCards, startingMoney) {
         this.determineWinners();
         this.payOutWinners();
         this.displayWinners();
-        rlsync.question();
+        if (this.getUserNewHand() === false) {
+          prompt('Hope you had fun and/or made some bucks! Have a great day!')
+          break
+        }
       }
     }
   }
@@ -383,6 +380,4 @@ function roundToCents(dollars) {
 }
 
 let table = makeTable(PLAYERS, 'Dealer', 100, 100);
-while (true) {
-  table.startGame();
-}
+table.startGame();
