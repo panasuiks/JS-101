@@ -120,10 +120,10 @@ function makeTable(players, dealer, minCards, startingMoney, numberOfDecks) {
       if (this.deck.length < this.minCards) this.resetDeck();
       let index = Math.floor((Math.random() * this.deck.length));
       this.hands[player].push(this.deck.splice(index, 1)[0]);
-      this.calculateScore();
+      this.updateScore();
     },
 
-    calculateScore() {
+    updateScore() {
       const CARD_INDEX = 0;
       const VALUE_INDEX = 2;
       const ACE_SUBTRACT = 10;
